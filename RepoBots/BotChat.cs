@@ -303,11 +303,13 @@ internal static class BotChat
         else if (Has(text, @"(иди к выходу|в грузовик|к грузовику|возвращайся в машину|уходим домой)")) cmd = Cmd.Truck;
         else if (Has(text, @"(подойди|иди сюда|ко мне|подбеги сюда)")) cmd = Cmd.Come;
         else if (Has(text, @"(стой|остановись|подожди|жди здесь|не двигайся)")) cmd = Cmd.Hold;
+        // "Подними меня" is a revive request, not a generic grab order.
+        else if (Has(text, @"(оживи|воскреси|подними меня)")) cmd = Cmd.Revive;
         else if (Has(text, @"(подними|возьми|подбери|хватай|подхвати)")) cmd = Cmd.Grab;
         else if (Has(text, @"(принеси|притащи|донеси|отнеси)")) cmd = Cmd.Bring;
         else if (Has(text, @"(помоги|помощь|выручай)")) cmd = Cmd.Help;
         else if (Has(text, @"(лечи|вылечи|подлечи|исцели)")) cmd = Cmd.Heal;
-        else if (Has(text, @"(оживи|воскреси|подними меня)")) cmd = Cmd.Revive;
+
         else if (Has(text, @"(открой|открывай)")) cmd = Cmd.Open;
         else if (Has(text, @"(где ты|ты где|где вы)")) ask = Ask.WhereAreYou;
         else if (Has(text, @"(что делаешь|чем занят|как дела|как жизнь)")) ask = Ask.Doing;
