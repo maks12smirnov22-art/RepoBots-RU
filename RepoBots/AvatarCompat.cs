@@ -1,30 +1,53 @@
+using System;
 using System.Reflection;
 using UnityEngine;
 
 namespace RepoBots;
 
-// The game (v0.5.0) no longer has a field called PlayerAvatar.collider.
-// Set it only if it still exists, so the player's own avatar can start.
+// R.E.P.O. 0.5.0 renamed PlayerAvatar.collider to playerCollider.
+// Keep the old name as a fallback for earlier game versions.
 internal static class AvatarCompat
 {
-	private static FieldInfo _field;
+    private static FieldInfo _field;
+    private static bool _looked;
 
-	private static bool _looked;
+    public static void SetCollider(PlayerAvatar avatar, Collider collider)
+    {
+        if (avatar == null)
+        {
+            return;
+        }
 
-	public static void SetCollider(PlayerAvatar avatar, Collider collider)
-	{
-		if (!_looked)
-		{
-			_looked = true;
-			_field = typeof(PlayerAvatar).GetField("collider", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			if (_field == null)
-			{
-				Plugin.Log.LogWarning((object)"PlayerAvatar.collider not found in this game version, skipping it.");
-			}
-		}
-		if (_field != null)
-		{
-			_field.SetValue(avatar, collider);
-		}
-	}
+        if (!_looked)
+        {
+            _looked = true;
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            _field = typeof(PlayerAvatar).GetField("playerCollider", flags)
+                ?? typeof(PlayerAvatar).GetField("collider", flags);
+
+            if (_field == null)
+            {
+                Plugin.Log.LogError("PlayerAvatar collider field not found (tried playerCollider and collider).");
+            }
+            else
+            {
+                Plugin.Log.LogInfo("PlayerAvatar collider field: " + _field.Name);
+            }
+        }
+
+        if (_field == null)
+        {
+            return;
+        }
+
+        try
+        {
+            _field.SetValue(avatar, collider);
+        }
+        catch (Exception ex)
+        {
+            Plugin.Log.LogError("Couldn't assign PlayerAvatar." + _field.Name + ": " + ex);
+        }
+    }
 }
