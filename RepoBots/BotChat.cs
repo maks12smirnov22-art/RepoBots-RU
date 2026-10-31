@@ -718,7 +718,11 @@ internal static class BotChat
 
 	private static bool NamedIn(string t, string name)
 	{
-		return Regex.IsMatch(t, "\\b" + Regex.Escape(name.ToLowerInvariant()) + "\\b(?!')");
+		// Normalize both sides: the player may address a bot by its Russian or
+		// English name, while Normalize() canonicalizes "Болт" to "bolt".
+		string normalizedName = Normalize(name ?? "");
+		return normalizedName.Length > 0 &&
+			Regex.IsMatch(Normalize(t), "\\b" + Regex.Escape(normalizedName) + "\\b(?!')");
 	}
 
 	public static string BareOf(string t, IEnumerable<string> names)
@@ -726,7 +730,11 @@ internal static class BotChat
 		string input = AllWords.Replace(t, " ");
 		foreach (string name in names)
 		{
-			input = Regex.Replace(input, "\\b" + Regex.Escape(name.ToLowerInvariant()) + "\\b(?!')", " ");
+			string normalizedName = Normalize(name ?? "");
+			if (normalizedName.Length > 0)
+			{
+				input = Regex.Replace(input, "\\b" + Regex.Escape(normalizedName) + "\\b(?!')", " ");
+			}
 		}
 		input = Regex.Replace(input, "^(hey|yo|ok|okay|please)\\s+|\\s+please$", " ");
 		return Regex.Replace(input, "\\s+", " ").Trim();
@@ -768,7 +776,11 @@ internal static class BotChat
 		t = AllWords.Replace(t, " ");
 		foreach (string name in names)
 		{
-			t = Regex.Replace(t, "\\b" + Regex.Escape(name.ToLowerInvariant()) + "\\b(?!')", " ");
+			string normalizedName = Normalize(name ?? "");
+			if (normalizedName.Length > 0)
+			{
+				t = Regex.Replace(t, "\\b" + Regex.Escape(normalizedName) + "\\b(?!')", " ");
+			}
 		}
 		return Regex.Replace(t, "\\s+", " ").Trim();
 	}
